@@ -8,6 +8,7 @@ import { Provider } from 'react-redux';
 import store from './redux/configStore'
 
 ReactDOM.render(
+  // 리덕스를 사용하기 위해서 Provider로 감싸주고 store를 import한다.
   <Provider store={store}>
     <BrowserRouter>
       <App />

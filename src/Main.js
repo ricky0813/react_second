@@ -2,17 +2,14 @@ import React from 'react';
 import styled from 'styled-components';
 import { Link } from 'react-router-dom';
 import Card from './Card';
-import {useSelector} from 'react-redux'
+
 
 const Main = () => {
-    const dict_list = useSelector((state) => state.dict.list)
+
     return (
-        <Container b_width={document.documentElement.clientWidth}>
+        <Container>
             <div>
-                {dict_list.map((dict, i) => {
-                    console.log(dict)
-                    return(<Card dict={dict} key={i}/>)
-                })}
+                <Card/>
             </div>
             <Link to='/input/add'>
                 <button></button>
