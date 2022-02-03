@@ -48,16 +48,16 @@ const Input = (props) => {
                     단어
                     {/* 파라미터가 add가 아닐 때만 기존 데이터를 defaultValue로 보여기주기(defaultValue가 수정할 수 있는 기본값) */}
                     {/* dict_data를 가져올 때 아직 덜 가져온 상태일 경우 콘솔 창에 값을 찾지 못했다고 찍힐 수 있어, 삼항 연산자로 작성 */}
-                    <input type='text' ref={ref => inputData.current[0] = ref} defaultValue={params.type !== 'add' ? (dict_data ? dict_data.word : '') : ''}/>
+                    <input type='text' ref={ref => inputData.current[0] = ref} defaultValue={params.type !== 'add' ? dict_data?.word : ''}/>
                 </label>
                 <label>
                     설명
-                    <input type='text' ref={ref => inputData.current[1] = ref} defaultValue={params.type !== 'add' ? (dict_data ? dict_data.exp : '') : ''}>
+                    <input type='text' ref={ref => inputData.current[1] = ref} defaultValue={params.type !== 'add' ? dict_data?.exp : ''}>
                     </input>
                 </label>
                 <label>
                     예시
-                    <input type='text' ref={ref => inputData.current[2] = ref} defaultValue={params.type !== 'add' ? (dict_data ? dict_data.ex : '') : ''}>
+                    <input type='text' ref={ref => inputData.current[2] = ref} defaultValue={params.type !== 'add' ? dict_data?.ex : ''}>
                     </input>
                 </label>
             </div> 
@@ -95,6 +95,7 @@ const Container = styled.div`
     }
 
     > div > label > input {
+        background-color: transparent;
         width: 20vw;
         min-width: 280px;
         height: 3vh;
@@ -111,7 +112,7 @@ const Container = styled.div`
 
     button {
         border: 0;
-        background-color: #eee;
+        background-color: #dcdcdc;
         width: 8vw;
         min-width: 180px;
         height: 6vh;    

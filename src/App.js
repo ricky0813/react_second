@@ -17,7 +17,7 @@ function App() {
   // useEffect를 하위 컴포넌트에서 사용해 디스패치 로드할 경우 렌더링 횟수도 증가하고, 카드 추가 시 뷰가 두 개씩 그려지는 문제 발생
   React.useEffect(()=>{   
     dispatch(loadDictFB())
-  },[dispatch]);
+  },[]);
 
   return (
     <AppWrap>
@@ -39,6 +39,7 @@ function App() {
 const AppWrap = styled.div`
   width: 100%;
   height: 100vh;
+  background-color: #fafafa;
 
   header {
     width: 100%;

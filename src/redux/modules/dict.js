@@ -1,7 +1,8 @@
 // const CREATE
 
-import { addDoc, collection, deleteDoc, doc, getDocs, updateDoc } from "firebase/firestore"
+import { addDoc, collection, deleteDoc, doc, getDocs, orderBy, query, updateDoc, limit, serverTimestamp, startAt } from "firebase/firestore"
 import { db } from './../../firebase';
+
 
 // Actions
 const LOAD = 'dict/LOAD'
@@ -10,13 +11,14 @@ const UPDATE = 'dict/UPDATE'
 const DELETE = 'dict/DELETE'
 
 const initialState = {
-    list: []
+    list: [],
+    paging: {start: null, next: null, size: 15},
 }
 
 
 // Action Creators
-export function loadDict(dict_list){
-    return {type: LOAD, dict_list}
+export function loadDict(dict_list, paging){
+    return {type: LOAD, dict_list, paging}
 }
 export function createDict(dict){
     return {type: CREATE, dict};
@@ -28,25 +30,48 @@ export function deleteDict(index){
     return {type: DELETE, index}
 }
 
+
 // middlewares
-export const loadDictFB = () => {
+export const loadDictFB = (start = null, size = 15) => {
     // dispatch를 파라미터로 받는 함수를 return
-    return async function (dispatch) {
+    return async function (dispatch, getState) {
+
+        let _paging = getState().dict.paging;
+
+        if(_paging.start && !_paging.next){
+            return;
+        }
+
+        const dictDB = collection(db, 'dict');
+        let q = query(dictDB, orderBy('timeStamp', 'desc'),limit(size + 6));
+
+        if(start){
+            q = query(dictDB, orderBy('timeStamp', 'desc'), startAt(start), limit(size + 1));
+        }
+
         // getDocs로 컬렉션 내의 모든 데이터를 가져온다.
-        const dict_Data = await getDocs(collection(db, 'dict')); 
-        console.log(dict_Data)
+        const dict_Data = await getDocs(q); 
+
+        let paging = {
+            start: dict_Data.docs[0],
+            next: dict_Data.docs.length >= size + 1 ? dict_Data.docs[dict_Data.docs.length-1] : null,
+            size: size,
+        };
+
+
         console.log('데이터를 가져왔습니다!')   
         let dict_list = [];
         // 파이어스토어에서 가져온 데이터에 forEach(배열 메서드X)를 돌면서 새로 선언한 배열에 push 
         dict_Data.forEach(d => dict_list.push({id: d.id, ...d.data()}))
+        dict_list.pop()
         // 만든 배열로 리덕스에 LOAD 액션 디스패치
-        dispatch(loadDict(dict_list))
+        dispatch(loadDict(dict_list, paging))
     }
 }
 
 export const createDictFB = (dict) => {
     return async function (dispatch) {
-        // 파이어 스토어에 addDoc으로 받아온 데이터를 추가
+        // 파이어 스토어에 addDoc으로 받아온 데이터를 추가        
         const docRef = await addDoc(collection(db,'dict'), dict)
         // 받아온 데이터에 id값을 더해 새로운 객체 생성
         const dict_data = {id: docRef.id, ...dict}
@@ -83,23 +108,27 @@ export const deleteDictFB = (dict_id) => {
 
 
 
+
 // Reducer
 export default function reducer(state = initialState, action = {}){
     switch(action.type) {
-        case 'dict/LOAD' : return {list: action.dict_list};
+        case 'dict/LOAD' : {
+            const new_list = [...state.list, ...action.dict_list]
+            return {list: new_list, paging: action.paging}
+        }; 
         case 'dict/CREATE' : {
-            const new_list = [...state.list, action.dict];
-            return {list: new_list}
+            const new_list = [action.dict, ...state.list];
+            return {list: new_list, paging: state.paging}
         };
         case 'dict/UPDATE' : {
             // 인덱스가 같은 객체를 찾아서 업데이트할 내용을 추가한 객체 반환
             const new_list = state.list.map((d,i) => i === action.index ? {...d, ...action.dict} : d)
-            return {list: new_list}
+            return {list: new_list, paging: state.paging}
         };
         case 'dict/DELETE' : {
             // filter로 인덱스가 같은 객체만 제거한다.
             const new_list = state.list.filter((d,i) => i !== action.index)
-            return {list: new_list}
+            return {list: new_list, paging: state.paging}
         }
         default: return state;
     }

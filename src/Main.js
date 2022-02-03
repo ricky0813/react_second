@@ -26,6 +26,7 @@ const Container = styled.div`
     display: flex;
     justify-content: center;
     box-sizing: border-box;
+    background-color: #fafafa;
     
     > div {
         width: calc(100% - 40px);
